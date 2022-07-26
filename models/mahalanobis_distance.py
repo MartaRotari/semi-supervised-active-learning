@@ -12,7 +12,7 @@ from scipy.stats import gaussian_kde, norm
 from scipy.optimize import brentq
 
 
-def t2_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, alpha=0.95):
+def t2_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, alpha=0.95):
     """
     Sampling based on the Hotelling T^2 statistics
     :param data: dataset containing multiple runs
@@ -22,6 +22,7 @@ def t2_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, alpha=0.9
     other methods even if here there is no validation)
     :param min_size: number of labeled observations initially available to the learner
     :param max_size: maximum size of the training set (budget = max_size - min_size)
+    :param seeds: a list of seeds for reproducibility of results
     :param alpha: labeling rate
     :return: array of RMSE results for each learning step and for each run
     """

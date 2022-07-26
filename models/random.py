@@ -20,6 +20,7 @@ def random_sampling(data, reps, n_obs_test, n_obs_val, min_size, seeds, max_size
     other methods even if here there is no validation)
     :param min_size: number of labeled observations initially available to the learner
     :param max_size: maximum size of the training set (budget = max_size - min_size)
+    :param seeds: a list of seeds for reproducibility of results
     :param alpha: labeling rate
     :return: array of RMSE results for each learning step and for each run
     """

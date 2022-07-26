@@ -22,10 +22,9 @@ def dataset_preprocessing(data, reps):
 df = pd.read_csv("/Users/dcac/Desktop/PhD/Data/TEP/Extended/tep_extended_compositions_1min.csv")
 cols_to_drop = ['Stream9A', 'Stream9B', 'Stream9C', 'Stream9D', 'Stream9E', 'Stream9F', 'Stream9G', 'Stream9H',
                 'Stream11D', 'Stream11E', 'Stream11F', 'Stream11G', 'Stream11H']
-outcome = 'Stream9E'
-cols_to_drop_updated = [col for col in cols_to_drop if col != outcome]
+cols_to_drop_updated = [col for col in cols_to_drop if col != 'Stream9E']
 df = df.drop(cols_to_drop_updated, axis=1)
-df.rename(columns={outcome: 'y', }, inplace=True)
+df.rename(columns={'Stream9E': 'y'}, inplace=True)
 
 # Taking last run to fit OAE
 training_set = df[df["RUN"] == 59].drop("RUN", axis=1)
@@ -41,4 +40,4 @@ projection.fit(encoding_layers=[16, 160, 80, 40, 20, 10], penalty_term=0.1, nr_e
 
 # Test and save transformed datasets
 new_dat = dataset_preprocessing(data=df, reps=58)
-new_dat.to_csv("TEP_9E_OAE_"+str(i)+"_features.csv", index=False)
+new_dat.to_csv("TEP_9E_OAE_10features.csv", index=False)
