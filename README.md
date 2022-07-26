@@ -1,5 +1,7 @@
 # Online Active Learning for Soft Sensor Development using Semi-Supervised Autoencoders
-Paper presented at the **ICML 2022 Workshop on Adaptive Experimental Design and Active Learning in the Real World**
+Paper presented at the **ICML 2022 Workshop on Adaptive Experimental Design and Active Learning in the Real World**.
+
+The full paper is available [here](https://realworldml.github.io/files/cr/paper12.pdf)
 
 <img src="https://user-images.githubusercontent.com/83544651/180979074-9145f42a-5106-4cfd-aa79-9de078f76827.png" width="80%" height="80%">
 
