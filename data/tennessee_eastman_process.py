@@ -47,7 +47,3 @@ for i in range(1, 61):
     print(i)
 data = pd.concat(datasets)
 data = data.to_csv("tep_extended_compositions_1min.csv", index=False)
-
-# df = df.drop(["Stream9C"], axis=1)
-# df.rename(columns={'Stream9E': 'y', }, inplace=True)
-# df_reduced = df.drop(cols_to_drop, axis=1)
