@@ -13,7 +13,7 @@ On top of this, we compare several strategies to acquire data points for linear 
 
 ## Summary
 This repo contains:
-1. `data`: folder containing a file with instruction on how the TEP simulations were obtained and preprocessed.
+1. `data`: folder containing a file with instructions on how the TEP simulations were obtained and preprocessed.
 2. `feature_extraction`: folder containing files for defining and training an autoencoder with an orthogonal regularization on its bottleneck.
 3. `models`: folder containing files related to the different query strategies, namely `random.py`, `mahalanobis_distance.py`, `query_by_committee.py` and `expected_model_change.py`.
 
