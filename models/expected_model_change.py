@@ -5,13 +5,11 @@ Function for sampling of process variables and corresponding quality information
 
 import numpy as np
 import pandas as pd
-import time
 from sklearn.metrics import mean_squared_error
 from sklearn.linear_model import LinearRegression
 from scipy.stats import gaussian_kde, norm
 from scipy.optimize import brentq
 from models.ensemble import bootstrap_models
-from models.pca_fit_transform import DimensionalityReductionPCA
 
 
 def compute_model_change(main_model, ensemble, x_new):
@@ -41,11 +39,9 @@ def compute_model_change(main_model, ensemble, x_new):
     return np.array(score)
 
 
-def emc_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, preprocessing=False,
-                 pc=0.85, results_percentage=False, representative_test=False, alpha=0.95):
+def emc_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, alpha=0.95):
     """
     Sampling bsed on the expected model change
-    :param pc: number of components for the PCA dimensionality reduction
     :param data: dataset containing multiple runs
     :param reps: number of times the procedure runs
     :param n_obs_test: number of observations in each run to be allocated to the test set
@@ -53,7 +49,7 @@ def emc_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, p
     :param min_size: number of labeled observations initially available to the learner
     :param max_size: maximum size of the training set (budget = max_size - min_size)
     :param seeds: a list of seeds to be used as starting list for each run for the bootstrap sampling
-    :param results_percentage: if True shows the results as percentage of a model that has all the labels available
+    :param alpha: labeling rate
     :return: array of RMSE results for each learning step and for each run
     """
     all_results = []  # Storing results from all the runs
@@ -65,26 +61,15 @@ def emc_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, p
             results = []  # Storing results of the current run
 
             # Allocating data to: test, train and stream
-            if representative_test:
-                current_series = data[data["RUN"] == simulation_run].drop("RUN", axis=1)
-                test_set = current_series.sample(n=n_obs_test, random_state=seeds[simulation_run])
-                # test_set = current_series[current_series.index % 2 != 0].iloc[:n_obs_test, :]
-                current_series = current_series.drop(test_set.index)
-                current_series = current_series.reset_index(drop=True)
-                # val_set = current_series.iloc[:n_obs_val, :]
-                val_set = current_series.sample(n=n_obs_val, random_state=seeds[simulation_run])
-                current_series = current_series.drop(val_set.index)
-                current_series = current_series.reset_index(drop=True)
-                train_set_labeled = pd.DataFrame(columns=list(test_set))
-                # stream_set = current_series.iloc[n_obs_val:, :]
-                stream_set = current_series
-
-            else:
-                current_series = data[data["RUN"] == simulation_run].drop("RUN", axis=1)
-                test_set = current_series.iloc[0:n_obs_test, :]
-                val_set = current_series.iloc[n_obs_test:n_obs_test + n_obs_val, :]
-                train_set_labeled = pd.DataFrame(columns=list(test_set))
-                stream_set = current_series.iloc[n_obs_test + n_obs_val:, :]
+            current_series = data[data["RUN"] == simulation_run].drop("RUN", axis=1)
+            test_set = current_series.sample(n=n_obs_test, random_state=seeds[simulation_run])
+            current_series = current_series.drop(test_set.index)
+            current_series = current_series.reset_index(drop=True)
+            val_set = current_series.sample(n=n_obs_val, random_state=seeds[simulation_run])
+            current_series = current_series.drop(val_set.index)
+            current_series = current_series.reset_index(drop=True)
+            train_set_labeled = pd.DataFrame(columns=list(test_set))
+            stream_set = current_series
 
             rng = np.random.default_rng(seeds[simulation_run])
             sampling_index = rng.uniform(0, 1, size=len(stream_set))
@@ -98,14 +83,6 @@ def emc_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, p
                     sample_to_add = pd.DataFrame(np.array(stream_set.iloc[i, :]).reshape(1, -1),
                                                  columns=list(train_set_labeled))
                     train_set_labeled = train_set_labeled.append(sample_to_add, ignore_index=True)
-
-            if preprocessing:
-                projection = DimensionalityReductionPCA(train_set=val_set, number_components=pc)
-                projection.fit()
-                test_set = projection.transform(test_set)
-                val_set = projection.transform(val_set)
-                train_set_labeled = projection.transform(train_set_labeled)
-                stream = projection.transform(stream)
 
             # Initializing regression class
             regr = LinearRegression(fit_intercept=True)
@@ -121,19 +98,7 @@ def emc_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, p
             regr.fit(x_train, y_train)
             y_pred = regr.predict(x_test)
             rmse = np.sqrt(mean_squared_error(y_pred, y_test))
-
-            # Benchmark RMSE: results we would get with 2000 labels available (approx. the number of obs spanned)
-            if results_percentage:
-                train_benchmark = stream.iloc[:2000, :]
-                x_benchmark = train_benchmark.drop(["y"], axis=1)
-                y_benchmark = train_benchmark["y"]
-                regr_benchmark = LinearRegression()
-                regr_benchmark.fit(x_benchmark, y_benchmark)
-                y_pred_benchmark = regr_benchmark.predict(x_test)
-                rmse_benchmark = np.sqrt(mean_squared_error(y_pred_benchmark, y_test))
-                results.append(rmse_benchmark / rmse * 100)
-            else:
-                results.append(rmse)
+            results.append(rmse)
 
             # Getting expected model change score
             bootstrapped_models = bootstrap_models(10, x_train, y_train, sampling_seed=seeds[simulation_run])
@@ -163,15 +128,9 @@ def emc_sampling(data, reps, n_obs_test, n_obs_val, min_size, max_size, seeds, p
                     regr.fit(x_train, y_train)
                     y_pred = regr.predict(x_test)
                     rmse = np.sqrt(mean_squared_error(y_pred, y_test))
-                    if results_percentage:
-                        results.append(rmse_benchmark / rmse * 100)
-                    else:
-                        results.append(rmse)
-                    print("EMC", '\t', "Replication: {:3}".format(simulation_run + 1), '\t',
-                          "RMSE: {:5.3f}".format(rmse), '\t',
-                          "Labeled samples: {:5}".format(x_train.shape[0]))
+                    results.append(rmse)
 
-                    # Getting exepcted model change scores
+                    # Getting expected model change scores
                     bootstrapped_models = bootstrap_models(10, x_train, y_train, sampling_seed=seeds[simulation_run])
                     emcm = compute_model_change(regr, bootstrapped_models, x_val)
 

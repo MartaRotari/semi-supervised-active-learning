@@ -30,14 +30,12 @@ class DimensionalityReductionOAE:
         self.train.create_datasets(train_data=x)
 
         # Trained model and losses
-        self.trained_autoencoder, train_losses, valid_losses = self.train.train_model(self.autoencoder,
-                                                                                      patience=patience,
-                                                                                      n_epochs=nr_epochs)
+        self.trained_autoencoder, losses = self.train.train_model(self.autoencoder, patience=patience, n_epochs=nr_epochs)
 
         # Plot of losses
-        # plt.plot(train_losses, color="c", label="Train Loss")
-        # plt.plot(valid_losses, color="r", label="Valid Loss")
-        # plt.legend()
+        plt.plot(losses[train], color="c", label="Train Loss")
+        plt.plot(losses[val], color="r", label="Valid Loss")
+        plt.legend()
 
         return
 
