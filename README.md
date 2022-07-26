@@ -10,6 +10,6 @@ This repo contains:
 3. `models`: folder containing files related to the different query strategies, namely `random.py`, `mahalanobis_distance.py`, `query_by_committee.py` and `expected_model_change.py`.
 
 ## Reproducing results:
-Two working notebooks to reproduce the results of the paper are provided:
+To ensure reproducibility, it is suggested to use environment `soft_sensor_environment.yml`. Two working notebooks to reproduce the results of the paper are provided:
 1. `autoencoder_training.ipynb`: for thetraining of the autoencoer.
 2. `results.ipynb`: the main results of the paper, showing how to obtain the learning curves related to semi-supervised learning and active learning.
