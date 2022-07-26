@@ -4,9 +4,11 @@ Paper presented at the **ICML 2022 Workshop on Adaptive Experimental Design and 
 The full paper is available [here](https://realworldml.github.io/files/cr/paper12.pdf).
 
 An orthogonal autoencoder is used to reduce the dimensionality of the input by nonlinear mapping.
+
 <img src="https://user-images.githubusercontent.com/83544651/181049730-fa0e03f2-295f-492c-af62-087bda945eb8.png" width="80%" height="80%">
 
 On top of this, we compare several strategies to acquire data points for linear regression, using the features extracted by the autoencoder as predictors.
+
 <img src="https://user-images.githubusercontent.com/83544651/180979074-9145f42a-5106-4cfd-aa79-9de078f76827.png" width="80%" height="80%">
 
 ## Summary:
